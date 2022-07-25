@@ -1,11 +1,26 @@
-use std::fs::File;
+use std::{
+    fmt::Debug,
+    fs::File,
+    io::{Read, Seek, SeekFrom},
+};
 
+use crate::image::{make_buffer, Pixel};
 use crate::utils::{read_u16, read_u32, Endianness};
 
-#[derive(Debug)]
 pub struct BMP {
     bitmap_file_header: BitmapFileHeader,
     dib_header: DIBHeader,
+    content: Vec<Pixel>,
+}
+
+impl Debug for BMP {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("BMP")
+            .field("bitmap_file_header", &self.bitmap_file_header)
+            .field("dib_header", &self.dib_header)
+            .field("content", &format!("[{} pixels]", self.content.len()))
+            .finish()
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -35,6 +50,7 @@ impl Signature {
 // const SIGNATURES: &'static [Signature; 6] = &[Signature::BM, Signature::BA, Signature::CI, Signature::CP, Signature::IC, Signature::PT];
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct BitmapFileHeader {
     signature: Signature,
     file_size: u32,
@@ -44,6 +60,7 @@ pub struct BitmapFileHeader {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct DIBHeader {
     dib_header_size: u32,
     width: u32,
@@ -84,9 +101,26 @@ impl BMP {
             important_colors: read_u32(&mut file, Endianness::LittleEndian)?,
         };
 
+        // Jumping on the location of image data
+        file.seek(SeekFrom::Start(bitmap_file_header.offset as u64))
+            .unwrap();
+
+        // Image size is not always specified, so we make sure we get a value
+        let image_size = if dib_header.image_size != 0 {
+            dib_header.image_size
+        } else {
+            dib_header.width * dib_header.height * dib_header.bits_per_pixel as u32 / 8
+        };
+
+        let mut buffer = vec![0; image_size as usize];
+        file.read_exact(&mut buffer).unwrap();
+
+        let content = make_buffer(&buffer, dib_header.bits_per_pixel as usize);
+
         Ok(BMP {
             bitmap_file_header,
             dib_header,
+            content,
         })
     }
 }
