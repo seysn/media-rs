@@ -1,21 +1,21 @@
 use std::fs::File;
 
-use crate::utils::{Endianness, read_u16, read_u32};
+use crate::utils::{read_u16, read_u32, Endianness};
 
 #[derive(Debug)]
 pub struct BMP {
     bitmap_file_header: BitmapFileHeader,
-    dib_header: DIBHeader
+    dib_header: DIBHeader,
 }
 
 #[derive(Debug, PartialEq)]
 enum Signature {
-    BM = 0x424d,    // Windows 3.1x, 95, NT, ... etc.
-    BA = 0x4241,    // OS/2 struct bitmap array
-    CI = 0x4349,    // OS/2 struct color icon
-    CP = 0x4350,    // OS/2 const color pointer
-    IC = 0x4943,    // OS/2 struct icon
-    PT = 0x5054,    // OS/2 pointer
+    BM = 0x424d, // Windows 3.1x, 95, NT, ... etc.
+    BA = 0x4241, // OS/2 struct bitmap array
+    CI = 0x4349, // OS/2 struct color icon
+    CP = 0x4350, // OS/2 const color pointer
+    IC = 0x4943, // OS/2 struct icon
+    PT = 0x5054, // OS/2 pointer
 }
 
 impl Signature {
@@ -27,7 +27,7 @@ impl Signature {
             0x4350 => Signature::CP,
             0x4943 => Signature::IC,
             0x5054 => Signature::PT,
-            _ => return Err(format!("invalid signature : {}", value))
+            _ => return Err(format!("invalid signature : {}", value)),
         })
     }
 }
@@ -40,7 +40,7 @@ pub struct BitmapFileHeader {
     file_size: u32,
     reserved1: u16,
     reserved2: u16,
-    offset: u32
+    offset: u32,
 }
 
 #[derive(Debug)]
@@ -62,7 +62,7 @@ impl BMP {
     pub fn read(filename: String) -> Result<BMP, String> {
         let mut file = File::open(filename).unwrap();
 
-        let bitmap_file_header = BitmapFileHeader{
+        let bitmap_file_header = BitmapFileHeader {
             signature: Signature::from_u16(read_u16(&mut file, Endianness::BigEndian)?)?,
             file_size: read_u32(&mut file, Endianness::LittleEndian)?,
             reserved1: read_u16(&mut file, Endianness::BigEndian)?,
@@ -70,7 +70,7 @@ impl BMP {
             offset: read_u32(&mut file, Endianness::LittleEndian)?,
         };
 
-        let dib_header = DIBHeader { 
+        let dib_header = DIBHeader {
             dib_header_size: read_u32(&mut file, Endianness::LittleEndian)?,
             width: read_u32(&mut file, Endianness::LittleEndian)?,
             height: read_u32(&mut file, Endianness::LittleEndian)?,
@@ -84,6 +84,9 @@ impl BMP {
             important_colors: read_u32(&mut file, Endianness::LittleEndian)?,
         };
 
-        Ok(BMP { bitmap_file_header, dib_header })
+        Ok(BMP {
+            bitmap_file_header,
+            dib_header,
+        })
     }
 }

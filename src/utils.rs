@@ -3,7 +3,7 @@ use std::{fs, io::Read};
 #[derive(PartialEq)]
 pub enum Endianness {
     LittleEndian,
-    BigEndian
+    BigEndian,
 }
 
 pub fn read_u8(file: &mut fs::File) -> Result<u8, String> {
@@ -43,18 +43,14 @@ pub fn read_u32(file: &mut fs::File, endianness: Endianness) -> Result<u32, Stri
     } else if res.unwrap() < 4 {
         Err("reached end of file".to_string())
     } else if endianness == Endianness::LittleEndian {
-        Ok(
-            ((buf[3] as u32) << 24) + 
-            ((buf[2] as u32) << 16) +
-            ((buf[1] as u32) << 8) +
-            buf[0] as u32
-        )
+        Ok(((buf[3] as u32) << 24)
+            + ((buf[2] as u32) << 16)
+            + ((buf[1] as u32) << 8)
+            + buf[0] as u32)
     } else {
-        Ok (
-            ((buf[0] as u32) << 24) + 
-            ((buf[1] as u32) << 16) +
-            ((buf[2] as u32) << 8) +
-            buf[3] as u32
-        )
+        Ok(((buf[0] as u32) << 24)
+            + ((buf[1] as u32) << 16)
+            + ((buf[2] as u32) << 8)
+            + buf[3] as u32)
     }
 }
