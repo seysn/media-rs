@@ -115,7 +115,11 @@ impl BMP {
         let mut buffer = vec![0; image_size as usize];
         file.read_exact(&mut buffer).unwrap();
 
-        let content = make_buffer(&buffer, dib_header.bits_per_pixel as usize);
+        let content = make_buffer(
+            &buffer,
+            dib_header.bits_per_pixel as usize,
+            dib_header.width as usize,
+        );
 
         Ok(BMP {
             bitmap_file_header,
