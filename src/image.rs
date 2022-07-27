@@ -17,8 +17,12 @@ fn make_gray_buffer(buffer: &[u8]) -> Vec<Pixel> {
 }
 
 fn make_rgb_buffer(buffer: &[u8], width: usize) -> Vec<Pixel> {
-    let height = buffer.len() / width;
-    let padding = 4 - (width * 3).rem_euclid(4);
+    let height = buffer.len() / width / 3;
+    let padding = if (width * 3).rem_euclid(4) == 0 {
+        0
+    } else {
+        4 - (width * 3).rem_euclid(4)
+    };
     let mut iter = buffer.iter();
     let mut content = Vec::new();
 
