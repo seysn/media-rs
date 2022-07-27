@@ -105,11 +105,18 @@ impl BMP {
         file.seek(SeekFrom::Start(bitmap_file_header.offset as u64))
             .unwrap();
 
+        let padding = if (dib_header.width * 3).rem_euclid(4) == 0 {
+            0
+        } else {
+            4 - (dib_header.width * 3).rem_euclid(4)
+        };
+
         // Image size is not always specified, so we make sure we get a value
         let image_size = if dib_header.image_size != 0 {
             dib_header.image_size
         } else {
             dib_header.width * dib_header.height * dib_header.bits_per_pixel as u32 / 8
+                + (padding * dib_header.height)
         };
 
         let mut buffer = vec![0; image_size as usize];
@@ -119,6 +126,8 @@ impl BMP {
             &buffer,
             dib_header.bits_per_pixel as usize,
             dib_header.width as usize,
+            dib_header.height as usize,
+            padding as usize,
         );
 
         Ok(BMP {
