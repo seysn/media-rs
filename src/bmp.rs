@@ -4,7 +4,7 @@ use std::{
     io::{Read, Seek, SeekFrom},
 };
 
-use crate::image::{make_buffer, Pixel};
+use crate::{image::{make_buffer, Pixel}, error::{MediaError, MediaResult}};
 use crate::utils::{read_u16, read_u32, Endianness};
 
 pub struct BMP {
@@ -34,7 +34,7 @@ enum Signature {
 }
 
 impl Signature {
-    fn from_u16(value: u16) -> Result<Signature, String> {
+    fn from_u16(value: u16) -> MediaResult<Signature> {
         Ok(match value {
             0x424d => Signature::BM,
             0x4241 => Signature::BA,
@@ -42,7 +42,7 @@ impl Signature {
             0x4350 => Signature::CP,
             0x4943 => Signature::IC,
             0x5054 => Signature::PT,
-            _ => return Err(format!("invalid signature : {}", value)),
+            _ => return Err(MediaError::DecodingError(format!("invalid signature : {}", value))),
         })
     }
 }
@@ -76,7 +76,7 @@ pub struct DIBHeader {
 }
 
 impl BMP {
-    pub fn read(filename: String) -> Result<BMP, String> {
+    pub fn read(filename: String) -> MediaResult<BMP> {
         let mut file = File::open(filename).unwrap();
 
         let bitmap_file_header = BitmapFileHeader {
