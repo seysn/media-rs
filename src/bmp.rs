@@ -112,11 +112,7 @@ impl ImageDecoder for BMP {
         // Jumping on the location of image data
         file.seek(SeekFrom::Start(bitmap_file_header.offset as u64))?;
 
-        let padding = if (dib_header.width * 3).rem_euclid(4) == 0 {
-            0
-        } else {
-            4 - (dib_header.width * 3).rem_euclid(4)
-        };
+        let padding = (4 - (dib_header.width * 3).rem_euclid(4)).rem_euclid(4);
 
         // Image size is not always specified, so we make sure we get a value
         let image_size = if dib_header.image_size != 0 {
