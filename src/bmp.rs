@@ -4,8 +4,11 @@ use std::{
     io::{Read, Seek, SeekFrom},
 };
 
-use crate::{image::{make_buffer, Pixel}, error::{MediaError, MediaResult}};
 use crate::utils::{read_u16, read_u32, Endianness};
+use crate::{
+    error::{MediaError, MediaResult},
+    image::{make_buffer, ImageDecoder, Pixel},
+};
 
 pub struct BMP {
     bitmap_file_header: BitmapFileHeader,
@@ -52,8 +55,6 @@ impl Signature {
     }
 }
 
-// const SIGNATURES: &'static [Signature; 6] = &[Signature::BM, Signature::BA, Signature::CI, Signature::CP, Signature::IC, Signature::PT];
-
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct BitmapFileHeader {
@@ -80,8 +81,10 @@ pub struct DIBHeader {
     important_colors: u32,
 }
 
-impl BMP {
-    pub fn read(filename: String) -> MediaResult<BMP> {
+impl ImageDecoder for BMP {
+    type RawImage = BMP;
+
+    fn read_raw<P: AsRef<std::path::Path>>(filename: P) -> MediaResult<Self::RawImage> {
         let mut file = File::open(filename).unwrap();
 
         let bitmap_file_header = BitmapFileHeader {

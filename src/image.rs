@@ -1,3 +1,7 @@
+use std::path::Path;
+
+use crate::error::MediaResult;
+
 #[derive(Debug)]
 pub enum Pixel {
     Gray(u8),
@@ -40,4 +44,10 @@ fn make_rgb_buffer(buffer: &[u8], width: usize, height: usize, padding: usize) -
     }
 
     content
+}
+
+pub trait ImageDecoder {
+    type RawImage;
+
+    fn read_raw<P: AsRef<Path>>(filename: P) -> MediaResult<Self::RawImage>;
 }
