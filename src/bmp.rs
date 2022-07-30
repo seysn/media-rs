@@ -42,7 +42,12 @@ impl Signature {
             0x4350 => Signature::CP,
             0x4943 => Signature::IC,
             0x5054 => Signature::PT,
-            _ => return Err(MediaError::DecodingError(format!("invalid signature : {}", value))),
+            _ => {
+                return Err(MediaError::DecodingError(format!(
+                    "invalid signature : {}",
+                    value
+                )))
+            }
         })
     }
 }
